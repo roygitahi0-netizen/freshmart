@@ -1,9 +1,14 @@
+databases:
+  - name: freshmart-db
+    plan: free
+
 services:
   - type: web
     name: freshmart-api
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pipenv install
     startCommand: gunicorn run:app
+    healthCheckPath: /api/products
     envVars:
       - key: DATABASE_URL
         fromDatabase:

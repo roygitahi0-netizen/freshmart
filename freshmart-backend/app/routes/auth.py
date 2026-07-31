@@ -8,6 +8,26 @@ from app.schemas.login_schema import LoginSchema
 auth_bp = Blueprint("auth", __name__)
 
 
+@auth_bp.route("/auth/register", methods=["POST"])
+def register():
+    json_data = request.get_json() or {}
+    errors = LoginSchema().validate(json_data)
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    existing = User.query.filter_by(email=json_data["email"]).first()
+    if existing:
+        return jsonify({"errors": {"email": ["Email already registered."]}}), 409
+
+    user = User(email=json_data["email"], is_admin=False)
+    user.set_password(json_data["password"])
+    db.session.add(user)
+    db.session.commit()
+
+    access_token = create_access_token(identity=user.id)
+    return jsonify({"access_token": access_token, "user": UserSchema().dump(user)}), 201
+
+
 @auth_bp.route("/auth/login", methods=["POST"])
 def login():
     json_data = request.get_json() or {}
