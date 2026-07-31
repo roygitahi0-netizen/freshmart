@@ -1,13 +1,40 @@
-# Fresh Mini Mart — Frontend
+# FreshMart — Full Stack
 
-A React + Tailwind CSS frontend for a neighborhood supermarket. It has public
-pages for browsing products and finding the store, plus an authenticated
-admin area for managing the product catalog (photos, prices, and in‑stock /
-out‑of‑stock status).
+A React + Tailwind CSS frontend with a Flask + SQLAlchemy backend for a neighborhood supermarket. The storefront has public pages for browsing products and finding the store, plus an authenticated admin area for managing the product catalog.
 
-**This repository is frontend-only.** There is no backend or database here —
-every screen is built and ready to connect to your API through one
-environment variable.
+## Project Structure
+
+```
+freshmart/
+├── freshmart-frontend/     # React + Vite frontend
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── freshmart-backend/      # Flask + SQLAlchemy backend
+│   ├── app/
+│   │   ├── __init__.py     # App factory, extensions init
+│   │   ├── models/         # SQLAlchemy models
+│   │   │   ├── user.py
+│   │   │   ├── product.py
+│   │   │   └── contact_message.py
+│   │   ├── schemas/        # Marshmallow schemas for validation & serialization
+│   │   │   ├── user_schema.py
+│   │   │   ├── product_schema.py
+│   │   │   ├── contact_schema.py
+│   │   │   └── login_schema.py
+│   │   └── routes/         # API route handlers
+│   │       ├── auth.py
+│   │       ├── products.py
+│   │       └── contact.py
+│   ├── seed.py             # Seed admin, demo user, sample products
+│   ├── run.py              # WSGI entry point
+│   ├── requirements.txt
+│   ├── .env.example
+│   ├── render.yaml         # Render deployment blueprint
+│   └── BACKEND_STATUS.md   # Backend progress & API docs
+├── .gitignore
+└── README.md               # You are here
+```
 
 ---
 
@@ -27,6 +54,8 @@ environment variable.
 
 ## 2. Tech stack
 
+### Frontend
+
 | Purpose        | Library                     |
 |-----------------|------------------------------|
 | UI framework    | React 19 (Vite)              |
@@ -35,9 +64,24 @@ environment variable.
 | Icons           | lucide-react                 |
 | Map             | react-leaflet + OpenStreetMap (no API key needed) |
 
+### Backend
+
+| Purpose              | Library                          |
+|-----------------------|----------------------------------|
+| Web framework         | Flask 2.3                        |
+| ORM                   | SQLAlchemy                       |
+| Validation & serialization | Marshmallow + marshmallow-sqlalchemy |
+| Password hashing      | Bcrypt (Flask-Bcrypt)            |
+| Auth                  | Flask-JWT-Extended               |
+| CORS                  | Flask-CORS                       |
+| Deployment            | Render (Python service)          |
+
 ## 3. Getting started
 
+### Frontend
+
 ```bash
+cd freshmart-frontend
 npm install
 cp .env.example .env      # then fill in VITE_API_BASE_URL when your backend is ready
 npm run dev                # http://localhost:5173
@@ -49,6 +93,20 @@ Build for production:
 npm run build     # outputs to /dist
 npm run preview   # serve the production build locally
 ```
+
+### Backend
+
+```bash
+cd freshmart-backend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python seed.py
+flask run
+```
+
+The backend runs on `http://localhost:5000` by default. Set `VITE_API_BASE_URL=http://localhost:5000` in the frontend `.env` to connect.
 
 ## 4. Connecting your Flask backend
 
@@ -73,6 +131,7 @@ VITE_API_BASE_URL=http://localhost:5000
 | POST   | `/api/products`                 | `multipart/form-data` (image + fields) → `{ product: {...} }` |
 | POST   | `/api/products/:id/update`      | `multipart/form-data` → `{ product: {...} }`           |
 | DELETE | `/api/products/:id`             | Bearer token → `{ msg }`                              |
+| POST   | `/api/contact`                  | `{ name, email, message }` → `{ msg }`                |
 
 A few Flask-specific conventions baked into `src/api/*`:
 
@@ -177,8 +236,10 @@ need to change — it just renders `<StoreMap />`.
 
 ## 7. Project structure
 
+### Frontend
+
 ```
-src/
+freshmart-frontend/src/
 ├── api/                  # All backend communication lives here
 │   ├── client.js         # Shared fetch wrapper (adds base URL + auth header)
 │   ├── auth.js            # login / logout / fetchCurrentUser
@@ -216,6 +277,36 @@ src/
 └── index.css                  # Tailwind + design-system component classes
 ```
 
+### Backend
+
+```
+freshmart-backend/
+├── app/
+│   ├── __init__.py          # App factory, extensions init
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py          # User model with bcrypt hashing
+│   │   ├── product.py       # Product model
+│   │   └── contact_message.py  # Contact message model
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── user_schema.py   # Marshmallow schema for User
+│   │   ├── product_schema.py  # Marshmallow schema for Product
+│   │   ├── contact_schema.py  # Marshmallow schema for Contact
+│   │   └── login_schema.py    # Marshmallow schema for login validation
+│   └── routes/
+│       ├── __init__.py
+│       ├── auth.py          # /api/auth/login, /logout, /me
+│       ├── products.py      # /api/products CRUD + upload
+│       └── contact.py       # /api/contact POST
+├── seed.py                  # Seed admin, demo user, sample products
+├── run.py                   # WSGI entry point
+├── requirements.txt
+├── .env.example
+├── render.yaml              # Render deployment blueprint
+└── BACKEND_STATUS.md        # Backend progress & API docs
+```
+
 ### Adding or changing a route
 
 Open `src/App.jsx` — every page in the app is registered there as a
@@ -242,7 +333,7 @@ defined in `tailwind.config.js` (color palette + fonts) and `src/index.css`
 (reusable classes like `.btn-primary`, `.crate-tag`, `.stamp-in` /
 `.stamp-out`). Change the palette once there and it updates everywhere.
 
-## 8. Deploying to Vercel
+## 8. Deploying to Vercel (frontend)
 
 This project is ready to deploy as-is:
 
@@ -264,13 +355,22 @@ vercel        # first deploy, follow the prompts
 vercel --prod # production deploy
 ```
 
-## 9. Notes for whoever picks this up next
+## 9. Deploying the backend to Render
 
-- No backend logic exists in this repo on purpose — `src/api/*.js` is the
-  only place that talks to a server, so wiring up a real backend never
-  requires touching a page or component.
-- The contact form on the Contact page is UI-only. Point its `onSubmit` in
-  `src/pages/Contact.jsx` at a `/contact` endpoint (or an email service)
-  when you're ready.
-- Sample product images are loaded from Unsplash for preview purposes only
-  — replace with your own product photography before going live.
+1. Push this repo to GitHub.
+2. Go to https://render.com and sign in with GitHub.
+3. Click **New → Blueprint** and select this repo.
+4. Render detects `freshmart-backend/render.yaml` and provisions the service + database.
+5. Set `JWT_SECRET_KEY` in the Render dashboard (or use the auto-generated value).
+6. Deploy. The backend will be available at the Render-provided URL.
+7. Set `VITE_API_BASE_URL` in Vercel's project settings to the Render URL.
+
+## 10. Notes for whoever picks this up next
+
+- The backend uses **marshmallow schemas** for both validation and serialization/deserialization of all request and response data.
+- **Bcrypt** is used for password hashing — passwords are never stored in plain text.
+- **Flask-JWT-Extended** handles authentication with Bearer tokens.
+- **Flask-CORS** is enabled so the frontend can communicate with the backend.
+- The frontend and backend communicate through a well-defined API contract documented in `freshmart-backend/BACKEND_STATUS.md`.
+- The contact form on the Contact page is UI-only in the frontend — point its `onSubmit` in `src/pages/Contact.jsx` at a `/contact` endpoint (or an email service) when you're ready.
+- Sample product images are loaded from Unsplash for preview purposes only — replace with your own product photography before going live.
