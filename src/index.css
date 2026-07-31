@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-paper text-ink font-body antialiased;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+  ::selection {
+    @apply bg-gold/40;
+  }
+  :focus-visible {
+    outline: 2px solid #1f4d3a;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Rubber-stamp style badge used for stock status — the signature element */
+  .stamp {
+    @apply inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-widest uppercase px-2.5 py-1 border-2 rounded-sm select-none;
+    transform: rotate(-4deg);
+  }
+  .stamp-in {
+    @apply stamp text-basil border-basil bg-basil/5;
+  }
+  .stamp-out {
+    @apply stamp text-tomato border-tomato bg-tomato/5;
+  }
+
+  /* Crate tag card used for product listings */
+  .crate-tag {
+    @apply relative bg-white rounded-md shadow-crate border border-market-green/10 overflow-hidden transition-transform duration-200;
+  }
+  .crate-tag:hover {
+    transform: translateY(-4px);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-market-green text-paper font-semibold px-5 py-2.5 rounded-md hover:bg-market-green-dark transition-colors duration-150;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 bg-gold text-market-green-dark font-semibold px-5 py-2.5 rounded-md hover:bg-gold-dark transition-colors duration-150;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-market-green text-market-green font-semibold px-5 py-2.5 rounded-md hover:bg-market-green hover:text-paper transition-colors duration-150;
+  }
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-md border border-market-green/20 bg-white focus:border-market-green outline-none transition-colors duration-150 text-sm;
+  }
+  .label-field {
+    @apply block text-xs font-mono uppercase tracking-widest text-market-green/70 mb-1.5;
+  }
+}
