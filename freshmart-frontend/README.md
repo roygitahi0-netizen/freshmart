@@ -123,6 +123,7 @@ VITE_API_BASE_URL=http://localhost:5000
 
 | Method | Endpoint                    | Purpose                                              |
 |--------|-------------------------------|--------------------------------------------------------|
+| POST   | `/api/auth/register`          | { email, password } → { access_token, user }            |
 | POST   | `/api/auth/login`              | `{ email, password }` → `{ access_token, user }`      |
 | POST   | `/api/auth/logout`             | Bearer token → `{ msg }`                              |
 | GET    | `/api/auth/me`                  | Bearer token → `{ user }`                             |

@@ -1,3 +1,15 @@
+"""
+Seed script for FreshMart backend.
+
+Creates the database tables (via Flask-Migrate) and seeds:
+  - 2 users: admin (is_admin=True) and demo user (is_admin=False)
+  - 5 sample products
+
+Before running this script:
+  1. Set up your environment: cp .env.example .env
+  2. Apply migrations: flask db upgrade
+  3. Then run: python seed.py
+"""
 import os
 from app import create_app, db
 from app.models.user import User
@@ -7,22 +19,22 @@ from app.models.product import Product
 def seed():
     app = create_app()
     with app.app_context():
-        db.create_all()
-
-        admin = User.query.filter_by(
-            email="admin@freshminimart.co.ke"
-        ).first()
-        if not admin:
-            admin = User(
-                email="admin@freshminimart.co.ke", is_admin=True
+        # db.create_all() is intentionally omitted — use `flask db upgrade`
+        # to apply migrations before seeding. This ensures the database
+        # schema is version-controlled and consistent across all environments.
+        if not db.engine.dialect.has_table(db.engine, "users"):
+            raise RuntimeError(
+                "Database tables not found. Run 'flask db upgrade' before seeding."
             )
+
+        admin = User.query.filter_by(email="admin@freshminimart.co.ke").first()
+        if not admin:
+            admin = User(email="admin@freshminimart.co.ke", is_admin=True)
             admin.set_password("admin123")
             db.session.add(admin)
             print("Admin user created: admin@freshminimart.co.ke / admin123")
 
-        demo_user = User.query.filter_by(
-            email="user@freshminimart.co.ke"
-        ).first()
+        demo_user = User.query.filter_by(email="user@freshminimart.co.ke").first()
         if not demo_user:
             demo_user = User(
                 email="user@freshminimart.co.ke", is_admin=False

@@ -4,8 +4,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
+migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
 
@@ -20,6 +22,7 @@ def create_app():
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = 3600
 
     db.init_app(app)
+    migrate.init_app(app, db)
     bcrypt.init_app(app)
     jwt.init_app(app)
     CORS(app)
@@ -29,6 +32,5 @@ def create_app():
         app.register_blueprint(auth_bp)
         app.register_blueprint(products_bp)
         app.register_blueprint(contact_bp)
-        db.create_all()
 
     return app
