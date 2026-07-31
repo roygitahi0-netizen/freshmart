@@ -81,10 +81,10 @@ export async function apiRequest(path, { method = "GET", body, token, headers = 
     method,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : undefined),
       ...headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
+    ...(method !== "GET" && body ? { body: JSON.stringify(body) } : {}),
   });
 
   const data = await parseJsonSafely(res);
@@ -112,10 +112,8 @@ export async function apiUpload(path, { method = "POST", formData, token } = {})
 
   const res = await fetch(`${API_BASE_URL}${API_PREFIX}${path}`, {
     method,
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: formData,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: formData && method !== "GET" ? formData : undefined,
   });
 
   const data = await parseJsonSafely(res);
