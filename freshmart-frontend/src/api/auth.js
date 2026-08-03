@@ -23,6 +23,31 @@ export async function login({ email, password }) {
   };
 }
 
+export async function register({ fullName, email, phone, password, location }) {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "No backend connected yet. Set VITE_API_BASE_URL in .env to enable real registration."
+    );
+  }
+  const data = await apiRequest("/auth/register", {
+    method: "POST",
+    body: { full_name: fullName, email, phone, password, location },
+  });
+  return {
+    token: data.access_token,
+    user: data.user,
+  };
+}
+
+export async function forgotPassword(email) {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "No backend connected yet. Set VITE_API_BASE_URL in .env to enable password reset."
+    );
+  }
+  return apiRequest("/auth/forgot-password", { method: "POST", body: { email } });
+}
+
 export async function logout(token) {
   if (!API_BASE_URL) return { success: true };
   return apiRequest("/auth/logout", { method: "POST", token });
