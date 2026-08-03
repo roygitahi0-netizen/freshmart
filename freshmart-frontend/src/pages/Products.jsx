@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, PackageSearch } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import Loader from "../components/Loader";
@@ -6,10 +7,11 @@ import { getProducts } from "../api/products";
 import { categories } from "../data/sampleProducts";
 
 export default function Products() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
+  const [query, setQuery] = useState(searchParams.get("q") || "");
+  const [category, setCategory] = useState(searchParams.get("category") || "All");
   const [stockFilter, setStockFilter] = useState("all"); // all | in | out
 
   useEffect(() => {
@@ -17,6 +19,11 @@ export default function Products() {
       .then(setProducts)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    setQuery(searchParams.get("q") || "");
+    setCategory(searchParams.get("category") || "All");
+  }, [searchParams]);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -41,13 +48,25 @@ export default function Products() {
           <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink/40" />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              const next = new URLSearchParams(searchParams);
+              if (e.target.value) next.set("q", e.target.value);
+              else next.delete("q");
+              setSearchParams(next);
+            }}
             placeholder="Search products…"
             className="input pl-10"
           />
         </div>
 
-        <select value={category} onChange={(e) => setCategory(e.target.value)} className="input lg:w-56">
+        <select value={category} onChange={(e) => {
+          const next = new URLSearchParams(searchParams);
+          setCategory(e.target.value);
+          if (e.target.value !== "All") next.set("category", e.target.value);
+          else next.delete("category");
+          setSearchParams(next);
+        }} className="input lg:w-56">
           {categories.map((c) => (
             <option key={c} value={c}>
               {c}

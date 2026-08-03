@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin, Navigation } from "lucide-react";
 import StockBadge from "../components/StockBadge";
 import Loader from "../components/Loader";
 import { getProduct } from "../api/products";
@@ -9,6 +9,8 @@ export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [location, setLocation] = useState(null);
+  const [locationError, setLocationError] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -16,6 +18,21 @@ export default function ProductDetail() {
       .then(setProduct)
       .finally(() => setLoading(false));
   }, [id]);
+
+  function handleTrackLocation() {
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported in this browser.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationError("");
+      },
+      () => setLocationError("Location access was denied. Please allow the browser location prompt."),
+    );
+  }
 
   if (loading) return <Loader label="Fetching product…" />;
 
@@ -73,6 +90,20 @@ export default function ProductDetail() {
             <Link to="/contact" className="btn-outline">
               Ask about this item
             </Link>
+          </div>
+
+          <div className="mt-6 rounded-lg border border-market-green/15 bg-paper-dark p-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-market-green">
+              <MapPin size={16} /> Track this product’s movement
+            </div>
+            <p className="mt-2 text-sm text-ink/60">Share your current location to see a simple delivery-aware checkpoint for this item.</p>
+            <button onClick={handleTrackLocation} className="mt-3 inline-flex items-center gap-2 rounded-md bg-market-green px-3 py-2 text-sm font-semibold text-paper">
+              <Navigation size={15} /> Capture location
+            </button>
+            {locationError ? <p className="mt-2 text-sm text-tomato">{locationError}</p> : null}
+            {location ? (
+              <p className="mt-2 text-sm text-basil">Location captured: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</p>
+            ) : null}
           </div>
         </div>
       </div>

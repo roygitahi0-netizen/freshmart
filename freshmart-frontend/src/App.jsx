@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 
 import Home from "./pages/Home";
 import Products from "./pages/Products";
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <CookieConsentBanner />
       <Footer />
     </div>
   );

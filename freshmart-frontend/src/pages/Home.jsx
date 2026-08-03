@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Truck, Leaf, ShieldCheck } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Truck, Leaf, ShieldCheck, Gift } from "lucide-react";
 import ProductCard from "../components/ProductCard";
 import Loader from "../components/Loader";
 import { getProducts } from "../api/products";
+import { useAuth } from "../context/AuthContext";
 
 const perks = [
   { icon: Leaf, title: "Picked Fresh Daily", desc: "Produce sourced from local farms every morning." },
@@ -12,6 +14,7 @@ const perks = [
 ];
 
 export default function Home() {
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,6 +67,31 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="max-w-6xl mx-auto px-5 sm:px-8 py-8"
+      >
+        <div className="rounded-2xl border border-market-green/15 bg-gradient-to-r from-market-green to-market-green-dark p-6 text-paper shadow-crate">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-[0.3em] text-gold">Loyalty rewards</p>
+              <h2 className="text-2xl font-semibold">{user ? `Welcome back, ${user.full_name || user.email}` : "Join the Fresh Mini Mart rewards club"}</h2>
+              <p className="mt-2 max-w-2xl text-sm text-paper/80">
+                Earn points with every order. Reach the next milestone and unlock a discount on your next basket.
+              </p>
+            </div>
+            <div className="rounded-xl bg-paper/15 px-4 py-3 text-center">
+              <div className="flex items-center gap-2 text-gold font-semibold">
+                <Gift size={16} /> {user?.loyalty_points ?? 120} pts
+              </div>
+              <p className="mt-1 text-xs text-paper/70">Next reward at 500 points</p>
+            </div>
+          </div>
+        </div>
+      </motion.section>
 
       {/* Perks */}
       <section className="max-w-6xl mx-auto px-5 sm:px-8 py-16 grid sm:grid-cols-3 gap-8">

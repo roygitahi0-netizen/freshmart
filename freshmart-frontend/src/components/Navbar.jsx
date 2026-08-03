@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
-import { Menu, X, Leaf, LayoutDashboard, LogOut } from "lucide-react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { Menu, X, Leaf, LayoutDashboard, LogOut, Search, ChevronRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { categories } from "../data/sampleProducts";
 
 const links = [
   { to: "/", label: "Home" },
@@ -11,7 +12,17 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleSearch(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    navigate(`/products?q=${encodeURIComponent(query.trim())}`);
+    setQuery("");
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-paper/95 backdrop-blur border-b border-market-green/10">
@@ -41,6 +52,18 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          <form onSubmit={handleSearch} className="flex items-center rounded-full border border-market-green/20 bg-white px-3 py-2">
+            <Search size={16} className="text-ink/40" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search products"
+              className="ml-2 w-32 border-0 bg-transparent text-sm outline-none"
+            />
+          </form>
+          <button onClick={() => setSidebarOpen(true)} className="btn-outline !py-2 !px-4 text-sm">
+            Categories
+          </button>
           {isAuthenticated ? (
             <>
               <Link to="/admin" className="btn-outline !py-2 !px-4 text-sm">
@@ -52,7 +75,7 @@ export default function Navbar() {
             </>
           ) : (
             <Link to="/login" className="btn-primary !py-2 !px-4 text-sm">
-              Admin Login
+              Sign in
             </Link>
           )}
         </div>
@@ -103,6 +126,36 @@ export default function Navbar() {
           )}
         </div>
       )}
+
+      <div className={`fixed inset-0 z-[60] transition ${sidebarOpen ? "pointer-events-auto" : "pointer-events-none"}`}>
+        <div className={`absolute inset-0 bg-ink/30 transition ${sidebarOpen ? "opacity-100" : "opacity-0"}`} onClick={() => setSidebarOpen(false)} />
+        <aside className={`absolute left-0 top-0 h-full w-80 max-w-[85%] bg-paper p-6 shadow-2xl transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-[0.3em] text-gold-dark">Browse</p>
+              <h2 className="text-xl font-semibold text-ink">Categories</h2>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="rounded-full p-2 text-ink/60 hover:bg-paper-dark">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="mt-6 space-y-2">
+            {categories.filter((c) => c !== "All").map((category) => (
+              <button
+                key={category}
+                onClick={() => {
+                  setSidebarOpen(false);
+                  navigate(`/products?category=${encodeURIComponent(category)}`);
+                }}
+                className="flex w-full items-center justify-between rounded-lg border border-market-green/10 px-4 py-3 text-left text-sm font-medium text-ink/70 hover:bg-paper-dark"
+              >
+                <span>{category}</span>
+                <ChevronRight size={16} className="text-market-green" />
+              </button>
+            ))}
+          </div>
+        </aside>
+      </div>
     </header>
   );
 }

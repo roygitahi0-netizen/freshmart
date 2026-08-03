@@ -1,10 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { login as loginRequest, logout as logoutRequest } from "../api/auth";
+import { login as loginRequest, logout as logoutRequest, register as registerRequest } from "../api/auth";
 
 const AuthContext = createContext(null);
 
-const TOKEN_KEY = "freshmart_admin_token";
-const USER_KEY = "freshmart_admin_user";
+const TOKEN_KEY = "freshmart_token";
+const USER_KEY = "freshmart_user";
 
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY));
@@ -37,8 +37,24 @@ export function AuthProvider({ children }) {
       return true;
     } catch (err) {
       setError(err.message || "Login failed");
-      // Present when the Flask/Marshmallow login schema rejects the
-      // payload (e.g. "Not a valid email address."), keyed by field name.
+      setFieldErrors(err.fieldErrors || null);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function register({ fullName, email, phone, password, location }) {
+    setLoading(true);
+    setError("");
+    setFieldErrors(null);
+    try {
+      const data = await registerRequest({ fullName, email, phone, password, location });
+      setToken(data.token);
+      setUser(data.user || { email });
+      return true;
+    } catch (err) {
+      setError(err.message || "Registration failed");
       setFieldErrors(err.fieldErrors || null);
       return false;
     } finally {
@@ -64,6 +80,7 @@ export function AuthProvider({ children }) {
     error,
     fieldErrors,
     login,
+    register,
     logout,
   };
 

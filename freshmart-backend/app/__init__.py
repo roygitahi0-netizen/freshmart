@@ -6,10 +6,15 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_migrate import Migrate
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 db = SQLAlchemy()
 migrate = Migrate()
 bcrypt = Bcrypt()
 jwt = JWTManager()
+
 
 def create_app():
     app = Flask(__name__)
@@ -29,8 +34,9 @@ def create_app():
 
     with app.app_context():
         from app.routes import auth_bp, products_bp, contact_bp
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(products_bp)
-        app.register_blueprint(contact_bp)
+
+        app.register_blueprint(auth_bp, url_prefix="/api")
+        app.register_blueprint(products_bp, url_prefix="/api")
+        app.register_blueprint(contact_bp, url_prefix="/api")
 
     return app
