@@ -15,10 +15,14 @@ from app.models.product import Product
 from app.models.user import User
 
 
+from sqlalchemy import inspect
+
+
 def seed():
     app = create_app()
     with app.app_context():
-        if not db.engine.dialect.has_table(db.engine, "users"):
+        inspector = inspect(db.engine)
+        if not inspector.has_table("users"):
             raise RuntimeError(
                 "Database tables not found. Run 'flask db upgrade' before seeding."
             )
